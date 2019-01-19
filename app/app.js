@@ -89,11 +89,42 @@ app.get('/infoAnno/:anno', function (req, res) {
 });
 
 app.get('/infoTipo/:tipo', function (req, res) {
-    // inserire qui il codice
+    
+    var tipo = (req.params.tipo);
+    MongoClient.connect('mongodb+srv://admin:MwbZUn1JUfbuRoSK@galvani-c4mon.mongodb.net/?retryWrites=true,{useNewUrlParser: true}', function(err, db) {
+      if (err) {
+        throw err;
+      }
+      var dbo = db.db("5E");
+      dbo.collection("Interventi118").find({InterventoTipo : tipo}).sort({anno : 1}).toArray(function(err, result) {
+        if (err) {
+          throw err;
+        }
+        res.send(result);
+        db.close();
+      });
+    });
+    
 });
 
 app.get('/infoAnnoTipo/:anno/:tipo', function (req, res) {
-    // inserire qui il codice
+    
+    var anno = parseInt(req.params.anno);
+    var tipo = (req.params.tipo);
+    MongoClient.connect('mongodb+srv://admin:MwbZUn1JUfbuRoSK@galvani-c4mon.mongodb.net/?retryWrites=true,{useNewUrlParser: true}', function(err, db) {
+      if (err) {
+        throw err;
+      }
+      var dbo = db.db("5E");
+      dbo.collection("Interventi118").find({ $and: [ {InterventoTipo : tipo}, {anno : anno}]}).sort({anno : 1}).toArray(function(err, result) {
+        if (err) {
+          throw err;
+        }
+        res.send(result);
+        db.close();
+      });
+    });
+    
 });
 
 // Create
@@ -120,7 +151,7 @@ app.post('/insertInfo', function (req, res) {
     var codGiallo = parseInt(req.body.codGiallo);
     var codBianco = parseInt(req.body.codBianco);
     var codVerde = parseInt(req.body.codVerde);
-
+    console.log(codGiallo);
     MongoClient.connect('mongodb+srv://admin:MwbZUn1JUfbuRoSK@galvani-c4mon.mongodb.net/?retryWrites=true,{useNewUrlParser: true}', function(err, db) {
       if (err) {
         throw err;
@@ -165,7 +196,23 @@ app.put('/updateInfo/:anno/:tipo/:codRosso/:codGiallo/:codBianco/:codVerde', fun
 
 //Delete
 app.delete('/deleteInfo/:anno/:tipo', function (req, res) {
-    // inserire qui il codice    
+   
+    var anno = parseInt(req.params.anno);
+    var tipo = req.params.tipo;
+    
+    MongoClient.connect('mongodb+srv://admin:MwbZUn1JUfbuRoSK@galvani-c4mon.mongodb.net/?retryWrites=true,{useNewUrlParser: true}', function(err, db) {
+      if (err) {
+        throw err;
+      }
+      var dbo = db.db("5E");
+      var myInfo = { $and: [ {InterventoTipo : tipo}, {anno : anno}]};
+       dbo.collection("Interventi118").deleteOne(myInfo, function(err, result) {
+        if (err) throw err;
+        res.send({n: result.result.n});
+        db.close();
+      });
+    });
+   
 });
 
 app.listen(9000, function () {
